@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم فاکتور - CashT</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Vazir';
+            src: url('./font/Vazir-FD.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazir', Tahoma, sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #2d2d2d;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid #404040;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid #404040;
+        }
+
+        .store-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .store-logo {
+            font-size: 32px;
+        }
+
+        .store-name {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .store-tagline {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .input-section {
+            padding: 30px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .auto-load-section {
+            background: #2a5298;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #64b5f6;
+        }
+
+        .auto-load-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #64b5f6;
+            font-weight: bold;
+        }
+
+        .file-input-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6d00, #ff9100);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 109, 0, 0.4);
+        }
+
+        #excelFile {
+            display: none;
+        }
+
+        .file-info {
+            font-size: 14px;
+            color: #bdbdbd;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #64b5f6;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            background: #3d3d3d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            resize: vertical;
+            font-family: 'Vazir', monospace;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #00c853, #64dd17);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 200, 83, 0.4);
+        }
+
+        .calculate-btn:disabled {
+            background: #757575;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .invoice-section {
+            padding: 30px;
+            display: none;
+        }
+
+        .invoice-container {
+            background: #363636;
+            border: 1px solid #555;
+            border-radius: 10px;
+            padding: 25px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #64b5f6;
+        }
+
+        .invoice-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #64b5f6;
+            margin-bottom: 10px;
+        }
+
+        .invoice-store {
+            font-size: 18px;
+            color: #81c784;
+            margin-bottom: 5px;
+        }
+
+        .invoice-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-item {
+            background: #404040;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .detail-item strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #bdbdbd;
+            font-size: 14px;
+        }
+
+        .detail-item span {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        #invoiceId {
+            background: #1e3c72 !important;
+            color: #64b5f6 !important;
+            font-family: monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 13px;
+            background: #404040;
+            border-radius: 8px;
+            overflow: hidden;
+            min-width: 800px;
+        }
+
+        .products-table th {
+            background: #1e3c72;
+            padding: 12px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            border: 1px solid #555;
+            white-space: nowrap;
+        }
+
+        .products-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #555;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+
+        .products-table tr:nth-child(even) {
+            background: #3d3d3d;
+        }
+
+        .products-table tr:hover {
+            background: #4d4d4d;
+        }
+
+        .product-name {
+            text-align: right;
+            min-width: 200px;
+            white-space: normal;
+        }
+
+        .product-info {
+            font-size: 11px;
+            color: #bdbdbd;
+            margin-top: 4px;
+        }
+
+        .price-cell {
+            font-family: 'Vazir', monospace;
+            font-weight: bold;
+            color: #64dd17;
+        }
+
+        .total-section {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #64b5f6;
+        }
+
+        .total-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #64dd17;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .screenshot-btn, .new-invoice-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screenshot-btn {
+            background: linear-gradient(135deg, #ff6d00, #ff9100);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 109, 0, 0.3);
+        }
+
+        .new-invoice-btn {
+            background: linear-gradient(135deg, #757575, #9e9e9e);
+            color: white;
+            box-shadow: 0 4px 15px rgba(117, 117, 117, 0.3);
+        }
+
+        .screenshot-btn:hover, .new-invoice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 109, 0, 0.4);
+        }
+
+        .screenshot-mode .action-buttons {
+            display: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #404040;
+            border-radius: 8px;
+            border: 1px solid #555;
+            font-size: 12px;
+            color: #bdbdbd;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #64b5f6;
+        }
+
+        .success-message {
+            background: #2e7d32;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .invoice-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .products-table {
+                font-size: 11px;
+                min-width: 900px;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 8px;
+            }
+            
+            .invoice-container {
+                overflow-x: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <div class="store-info">
+                <div class="store-logo">💎</div>
+                <div>
+                    <div class="store-name">CashT Store</div>
+                    <div class="store-tagline">فروشگاه محصولات دیجیتال - خرید امن و مطمئن</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="auto-load-section">
+                <div class="auto-load-info">
+                    <span>📊</span>
+                    <span>داده‌ها به طور خودکار از فایل data.xlsx بارگذاری می‌شوند</span>
+                </div>
+            </div>
+
+            <div class="file-input-group">
+                <label for="excelFile" class="file-input-label">
+                    📁 آپلود فایل اکسل جدید (اختیاری)
+                </label>
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+                <div class="file-info">
+                    اگر می‌خواهید فایل متفاوتی استفاده کنید، اینجا آپلود کنید
+                </div>
+                <div id="fileName" class="file-info"></div>
+            </div>
+
+            <div class="success-message" id="autoLoadSuccess">
+                ✅ فایل data.xlsx با موفقیت بارگذاری شد
+            </div>
+
+            <div class="input-group">
+                <label>شناسه محصولات (هر خط یک محصول):</label>
+                <textarea id="productIds" placeholder="مثال:&#10;DG120121&#10;DG120122&#10;DG120123"></textarea>
+            </div>
+            
+            <div class="loading" id="loading">در حال بارگذاری داده‌ها...</div>
+            
+            <button class="calculate-btn" id="calculateBtn" onclick="calculateInvoice()">
+                🧮 محاسبه فاکتور
+            </button>
+        </div>
+
+        <div class="invoice-section" id="invoiceSection">
+            <div class="invoice-container" id="invoiceContainer">
+                <div class="invoice-header">
+                    <div class="invoice-title">فاکتور فروش</div>
+                    <div class="invoice-store">CashT</div>
+                </div>
+
+                <div class="invoice-details">
+                    <div class="detail-item">
+                        <strong>شناسه فاکتور:</strong>
+                        <span id="invoiceId">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>تعداد محصولات:</strong>
+                        <span id="productCount">0</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>تاریخ:</strong>
+                        <span id="invoiceDate"></span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>ساعت:</strong>
+                        <span id="invoiceTime"></span>
+                    </div>
+                </div>
+
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>شناسه</th>
+                            <th>نام کامل محصول</th>
+                            <th>نوع محصول</th>
+                            <th>اطلاعات</th>
+                            <th>سایز</th>
+                            <th>قیمت (هزار تومان)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsList">
+                    </tbody>
+                </table>
+
+                <div class="total-section">
+                    <div style="margin-bottom: 10px; font-size: 16px; opacity: 0.9;">💰 جمع کل فاکتور:</div>
+                    <div class="total-amount" id="totalAmount">0 هزار تومان</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="screenshot-btn" onclick="takeScreenshot()">
+                        📸 دانلود فاکتور
+                    </button>
+                    <button class="new-invoice-btn" onclick="newInvoice()">
+                        🆕 فاکتور جدید
+                    </button>
+                </div>
+
+                <div class="footer-note">
+                    💳 این فاکتور توسط سیستم فروشگاه CashT صادر شده است | 
+                    ⏰ مرسی از اعتماد و حمایتتون   | 
+                    📞 پشتیبانی: @bee_yy
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let productsDatabase = {};
+        let currentInvoiceId = '';
+
+        // تابع برای بارگذاری خودکار فایل data.xlsx
+        async function loadDefaultExcelFile() {
+            const loading = document.getElementById('loading');
+            const successMessage = document.getElementById('autoLoadSuccess');
+            
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch('./data.xlsx');
+                if (!response.ok) {
+                    throw new Error('فایل data.xlsx یافت نشد');
+                }
+                
+                const data = await response.arrayBuffer();
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // خواندن اولین شیت
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // تبدیل به JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                // تبدیل به فرمت مورد نیاز
+                productsDatabase = {};
+                let loadedCount = 0;
+                
+                jsonData.forEach(row => {
+                    // جستجو برای پیدا کردن ستون‌ها با نام‌های مختلف
+                    const productId = findColumnValue(row, ['id', 'ID', 'Id', 'کد', 'شناسه', 'کد محصول']);
+                    if (productId) {
+                        productsDatabase[productId] = {
+                            price: findColumnValue(row, ['price', 'Price', 'قیمت', 'مبلغ'], 0),
+                            full_name: findColumnValue(row, ['full name', 'full_name', 'name', 'نام', 'نام کامل', 'عنوان'], ''),
+                            product: findColumnValue(row, ['product', 'Product', 'محصول', 'نوع'], 'Digital'),
+                            info: findColumnValue(row, ['info', 'Info', 'اطلاعات', 'توضیحات'], ''),
+                            size: findColumnValue(row, ['size', 'Size', 'سایز', 'حجم'], '')
+                        };
+                        loadedCount++;
+                    }
+                });
+                
+                loading.style.display = 'none';
+                successMessage.style.display = 'block';
+                successMessage.innerHTML = `✅ فایل data.xlsx با موفقیت بارگذاری شد<br>تعداد محصولات: ${loadedCount}`;
+                
+                console.log('داده‌های بارگذاری شده:', productsDatabase);
+                
+            } catch (error) {
+                console.error('خطا در بارگذاری فایل پیش‌فرض:', error);
+                loading.style.display = 'none';
+                document.getElementById('autoLoadSuccess').innerHTML = 
+                    '❌ فایل data.xlsx یافت نشد. لطفاً از طریق دکمه بالا فایل را آپلود کنید.';
+                document.getElementById('autoLoadSuccess').style.background = '#c62828';
+                document.getElementById('autoLoadSuccess').style.display = 'block';
+            }
+        }
+
+        // تابع کمکی برای پیدا کردن مقادیر ستون‌ها
+        function findColumnValue(row, possibleNames, defaultValue = '') {
+            for (let name of possibleNames) {
+                if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
+                    return row[name];
+                }
+            }
+            return defaultValue;
+        }
+
+        // تابع برای خواندن فایل اکسل دستی
+        function handleExcelFile(file) {
+            const loading = document.getElementById('loading');
+            const fileName = document.getElementById('fileName');
+            const successMessage = document.getElementById('autoLoadSuccess');
+            
+            loading.style.display = 'block';
+            successMessage.style.display = 'none';
+            fileName.textContent = `فایل انتخاب شده: ${file.name}`;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    productsDatabase = {};
+                    let loadedCount = 0;
+                    
+                    jsonData.forEach(row => {
+                        const productId = findColumnValue(row, ['id', 'ID', 'Id', 'کد', 'شناسه', 'کد محصول']);
+                        if (productId) {
+                            productsDatabase[productId] = {
+                                price: findColumnValue(row, ['price', 'Price', 'قیمت', 'مبلغ'], 0),
+                                full_name: findColumnValue(row, ['full name', 'full_name', 'name', 'نام', 'نام کامل', 'عنوان'], ''),
+                                product: findColumnValue(row, ['product', 'Product', 'محصول', 'نوع'], 'Digital'),
+                                info: findColumnValue(row, ['info', 'Info', 'اطلاعات', 'توضیحات'], ''),
+                                size: findColumnValue(row, ['size', 'Size', 'سایز', 'حجم'], '')
+                            };
+                            loadedCount++;
+                        }
+                    });
+                    
+                    loading.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    successMessage.innerHTML = `✅ فایل با موفقیت بارگذاری شد<br>تعداد محصولات: ${loadedCount}`;
+                    
+                } catch (error) {
+                    console.error('خطا در خواندن فایل اکسل:', error);
+                    loading.style.display = 'none';
+                    alert('❌ خطا در خواندن فایل اکسل. لطفاً از صحت فرمت فایل مطمئن شوید.');
+                }
+            };
+            
+            reader.onerror = function() {
+                loading.style.display = 'none';
+                alert('❌ خطا در خواندن فایل');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // تابع برای فرمت کردن قیمت
+        function formatPrice(price) {
+            if (price < 1000) {
+                return price.toLocaleString() + ' هزار تومان';
+            } else {
+                const priceInToman = price * 1000;
+                return priceInToman.toLocaleString() + ' تومان';
+            }
+        }
+
+        // تابع برای فرمت کردن قیمت در جدول
+        function formatPriceForTable(price) {
+            return price.toLocaleString();
+        }
+
+        // تولید شناسه رندوم برای فاکتور
+        function generateInvoiceId() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // فرمت کردن زمان
+        function formatTime(date) {
+            return date.toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        async function calculateInvoice() {
+            if (Object.keys(productsDatabase).length === 0) {
+                alert('لطفاً منتظر بمانید تا داده‌ها بارگذاری شوند');
+                return;
+            }
+
+            const productIdsText = document.getElementById('productIds').value;
+            const productIds = productIdsText.split('\n')
+                .map(id => id.trim())
+                .filter(id => id !== '');
+
+            if (productIds.length === 0) {
+                alert('لطفاً حداقل یک شناسه محصول وارد کنید');
+                return;
+            }
+
+            let total = 0;
+            let validProducts = [];
+            let invalidProducts = [];
+
+            productIds.forEach((id, index) => {
+                if (productsDatabase[id]) {
+                    const product = productsDatabase[id];
+                    validProducts.push({
+                        id: id,
+                        full_name: product.full_name,
+                        product: product.product,
+                        info: product.info,
+                        size: product.size,
+                        price: product.price,
+                        row: index + 1
+                    });
+                    total += product.price;
+                } else {
+                    invalidProducts.push(id);
+                }
+            });
+
+            if (validProducts.length === 0) {
+                alert('هیچ محصول معتبری پیدا نشد');
+                return;
+            }
+
+            currentInvoiceId = generateInvoiceId();
+
+            const productsList = document.getElementById('productsList');
+            productsList.innerHTML = '';
+            
+            validProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.row}</td>
+                    <td>${product.id}</td>
+                    <td class="product-name">
+                        ${product.full_name}
+                        ${product.info ? `<div class="product-info">${product.info}</div>` : ''}
+                    </td>
+                    <td>${product.product}</td>
+                    <td>${product.info || '-'}</td>
+                    <td>${product.size || '-'}</td>
+                    <td class="price-cell">${formatPriceForTable(product.price)}</td>
+                `;
+                productsList.appendChild(row);
+            });
+
+            document.getElementById('productCount').textContent = validProducts.length;
+            document.getElementById('totalAmount').textContent = formatPrice(total);
+            document.getElementById('invoiceId').textContent = currentInvoiceId;
+            
+            const now = new Date();
+            document.getElementById('invoiceDate').textContent = now.toLocaleDateString('fa-IR');
+            document.getElementById('invoiceTime').textContent = formatTime(now);
+
+            document.getElementById('invoiceSection').style.display = 'block';
+
+            document.getElementById('invoiceSection').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+
+            if (invalidProducts.length > 0) {
+                setTimeout(() => {
+                    alert(`محصولات زیر یافت نشدند:\n${invalidProducts.join('\n')}`);
+                }, 500);
+            }
+        }
+
+        function newInvoice() {
+            document.getElementById('productIds').value = '';
+            document.getElementById('invoiceSection').style.display = 'none';
+            document.getElementById('productsList').innerHTML = '';
+            currentInvoiceId = '';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function takeScreenshot() {
+            const invoiceContainer = document.getElementById('invoiceContainer');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            mainContainer.classList.add('screenshot-mode');
+            
+            const originalOverflow = invoiceContainer.style.overflowX;
+            const originalMinWidth = invoiceContainer.style.minWidth;
+            
+            try {
+                invoiceContainer.style.overflowX = 'visible';
+                invoiceContainer.style.minWidth = '900px';
+                
+                const canvas = await html2canvas(invoiceContainer, {
+                    backgroundColor: '#363636',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    width: invoiceContainer.scrollWidth,
+                    height: invoiceContainer.scrollHeight,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+                
+                const link = document.createElement('a');
+                link.download = `CashT-فاکتور-${currentInvoiceId}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                
+            } catch (error) {
+                console.error('خطا در ایجاد اسکرین‌شات:', error);
+                alert('خطا در ایجاد فاکتور');
+            } finally {
+                invoiceContainer.style.overflowX = originalOverflow;
+                invoiceContainer.style.minWidth = originalMinWidth;
+                mainContainer.classList.remove('screenshot-mode');
+            }
+        }
+
+        // رویدادهای صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            // بارگذاری خودکار فایل data.xlsx
+            loadDefaultExcelFile();
+            
+            // رویداد انتخاب فایل
+            document.getElementById('excelFile').addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleExcelFile(e.target.files[0]);
+                }
+            });
+            
+            // نمایش تاریخ و ساعت فعلی
+            const now = new Date();
+            document.getElementById('invoiceDate').textContent = now.toLocaleDateString('fa-IR');
+            document.getElementById('invoiceTime').textContent = formatTime(now);
+        });
+    </script>
+</body>
+</html>
